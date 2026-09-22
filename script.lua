@@ -89,6 +89,67 @@ closeCorner.Parent = closeBtn
 
 closeBtn.MouseButton1Click:Connect(function() main.Visible = false end)
 
+-- HAND BUILDER
+
+local function makePart(parent, size, cframe, color, material, transparency)
+	local p = Instance.new("Part")
+	p.Size = size
+	p.CFrame = cframe
+	p.Color = color
+	p.Material = material or Enum.Material.SmoothPlastic
+	p.Transparency = transparency or 0
+	p.Anchored = false
+	p.CanCollide = false
+	p.CanQuery = false
+	p.CanTouch = false
+	p.Parent = parent
+	return p
+end
+
+local function buildHand(folder, baseCFrame, openFingers)
+	local parts = {}
+
+	local palm = makePart(folder, Vector3.new(10, 4, 10), baseCFrame, HAND_TAN, Enum.Material.SmoothPlastic, 0)
+	table.insert(parts, palm)
+
+	local eye = makePart(folder, Vector3.new(6, 0.5, 6), baseCFrame * CFrame.new(0, 2.3, 0), HAND_CYAN, Enum.Material.Neon, 0)
+	table.insert(parts, eye)
+
+	local fingerXs = {-3.5, -1.75, 0, 1.75, 3.5}
+	for i, x in ipairs(fingerXs) do
+		local seg1 = makePart(folder, Vector3.new(1.6, 3, 1.6), baseCFrame * CFrame.new(x, 3.5, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
+		table.insert(parts, seg1)
+
+		local joint1 = makePart(folder, Vector3.new(1.2, 0.6, 1.2), baseCFrame * CFrame.new(x, 5.1, 0), HAND_CYAN, Enum.Material.Neon, 0)
+		table.insert(parts, joint1)
+
+		local chain1 = makePart(folder, Vector3.new(0.4, 1.5, 0.4), baseCFrame * CFrame.new(x, 5.8, 0), HAND_CHAIN, Enum.Material.Metal, 0)
+		table.insert(parts, chain1)
+
+		local seg2Y = openFingers and 7.2 or 6.8
+		local seg2 = makePart(folder, Vector3.new(1.4, 2.5, 1.4), baseCFrame * CFrame.new(x, seg2Y, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
+		table.insert(parts, seg2)
+
+		local joint2 = makePart(folder, Vector3.new(1.2, 0.6, 1.2), baseCFrame * CFrame.new(x, seg2Y + 1.3, 0), HAND_CYAN, Enum.Material.Neon, 0)
+		table.insert(parts, joint2)
+
+		local seg3Y = openFingers and seg2Y + 2.5 or seg2Y + 1.8
+		local seg3 = makePart(folder, Vector3.new(1.2, 2, 1.2), baseCFrame * CFrame.new(x, seg3Y, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
+		table.insert(parts, seg3)
+	end
+
+	local thumbJoint = makePart(folder, Vector3.new(1.2, 0.6, 1.2), baseCFrame * CFrame.new(-5.5, 0, 0), HAND_CYAN, Enum.Material.Neon, 0)
+	table.insert(parts, thumbJoint)
+
+	local thumb = makePart(folder, Vector3.new(2, 3, 1.5), baseCFrame * CFrame.new(-6.8, -1, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
+	table.insert(parts, thumb)
+
+	local thumbTip = makePart(folder, Vector3.new(1.5, 2, 1.2), baseCFrame * CFrame.new(-7.8, -2.8, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
+	table.insert(parts, thumbTip)
+
+	return parts
+end
+
 local navBar = Instance.new("Frame")
 navBar.Size = UDim2.new(1, -12, 0, 30)
 navBar.Position = UDim2.new(0, 6, 0, 34)
@@ -1323,68 +1384,6 @@ local function stopBlackHole()
 end
 
 player.CharacterAdded:Connect(function() if holeActive then stopBlackHole() end end)
-
-------------------------------------------------------------
--- HAND BUILDER
-------------------------------------------------------------
-local function makePart(parent, size, cframe, color, material, transparency)
-	local p = Instance.new("Part")
-	p.Size = size
-	p.CFrame = cframe
-	p.Color = color
-	p.Material = material or Enum.Material.SmoothPlastic
-	p.Transparency = transparency or 0
-	p.Anchored = false
-	p.CanCollide = false
-	p.CanQuery = false
-	p.CanTouch = false
-	p.Parent = parent
-	return p
-end
-
-local function buildHand(folder, baseCFrame, openFingers)
-	local parts = {}
-
-	local palm = makePart(folder, Vector3.new(10, 4, 10), baseCFrame, HAND_TAN, Enum.Material.SmoothPlastic, 0)
-	table.insert(parts, palm)
-
-	local eye = makePart(folder, Vector3.new(6, 0.5, 6), baseCFrame * CFrame.new(0, 2.3, 0), HAND_CYAN, Enum.Material.Neon, 0)
-	table.insert(parts, eye)
-
-	local fingerXs = {-3.5, -1.75, 0, 1.75, 3.5}
-	for i, x in ipairs(fingerXs) do
-		local seg1 = makePart(folder, Vector3.new(1.6, 3, 1.6), baseCFrame * CFrame.new(x, 3.5, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
-		table.insert(parts, seg1)
-
-		local joint1 = makePart(folder, Vector3.new(1.2, 0.6, 1.2), baseCFrame * CFrame.new(x, 5.1, 0), HAND_CYAN, Enum.Material.Neon, 0)
-		table.insert(parts, joint1)
-
-		local chain1 = makePart(folder, Vector3.new(0.4, 1.5, 0.4), baseCFrame * CFrame.new(x, 5.8, 0), HAND_CHAIN, Enum.Material.Metal, 0)
-		table.insert(parts, chain1)
-
-		local seg2Y = openFingers and 7.2 or 6.8
-		local seg2 = makePart(folder, Vector3.new(1.4, 2.5, 1.4), baseCFrame * CFrame.new(x, seg2Y, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
-		table.insert(parts, seg2)
-
-		local joint2 = makePart(folder, Vector3.new(1.2, 0.6, 1.2), baseCFrame * CFrame.new(x, seg2Y + 1.3, 0), HAND_CYAN, Enum.Material.Neon, 0)
-		table.insert(parts, joint2)
-
-		local seg3Y = openFingers and seg2Y + 2.5 or seg2Y + 1.8
-		local seg3 = makePart(folder, Vector3.new(1.2, 2, 1.2), baseCFrame * CFrame.new(x, seg3Y, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
-		table.insert(parts, seg3)
-	end
-
-	local thumbJoint = makePart(folder, Vector3.new(1.2, 0.6, 1.2), baseCFrame * CFrame.new(-5.5, 0, 0), HAND_CYAN, Enum.Material.Neon, 0)
-	table.insert(parts, thumbJoint)
-
-	local thumb = makePart(folder, Vector3.new(2, 3, 1.5), baseCFrame * CFrame.new(-6.8, -1, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
-	table.insert(parts, thumb)
-
-	local thumbTip = makePart(folder, Vector3.new(1.5, 2, 1.2), baseCFrame * CFrame.new(-7.8, -2.8, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
-	table.insert(parts, thumbTip)
-
-	return parts
-end
 
 ------------------------------------------------------------
 -- GUN HAND
