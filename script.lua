@@ -10,7 +10,7 @@ local Lighting = game:GetService("Lighting")
 local StarterGui = game:GetService("StarterGui")
 local Debris = game:GetService("Debris")
 
-workspace.FallenPartsDestroyHeight = -100000
+-- workspace.FallenPartsDestroyHeight = -100000
 
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
