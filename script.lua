@@ -1,6 +1,7 @@
 -- c00lgui Reborn - Complete Edition (All Features + Hands)
 -- GitHub: toxfuly-ctrl/coolguiv2
 -- Loader: loadstring(game:HttpGet("https://raw.githubusercontent.com/toxfuly-ctrl/coolguiv2/main/script.lua"))()
+print("=== SCRIPT STARTING ===")
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
