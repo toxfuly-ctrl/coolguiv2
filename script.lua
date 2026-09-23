@@ -1129,6 +1129,147 @@ local function disableExplode()
 	end
 end
 
+------------------------------------------------------------
+-- HAMMER (add to main GUI)
+------------------------------------------------------------
+local hammerActive = false
+local hammerParts = {}
+local hammerFolder = nil
+local hammerConnection = nil
+local hammerClickConn = nil
+local hammerSlam = false
+local hammerSlamOffset = 0
+
+local function buildHammer()
+	if hammerFolder then hammerFolder:Destroy() end
+	hammerFolder = Instance.new("Folder")
+	hammerFolder.Name = "CoolKidHammer"
+	hammerFolder.Parent = workspace
+
+	hammerParts = {}
+
+	local handle = Instance.new("Part")
+	handle.Size = Vector3.new(1, 5, 1)
+	handle.Color = Color3.fromRGB(120, 80, 40)
+	handle.Material = Enum.Material.Wood
+	handle.Anchored = false
+	handle.CanCollide = false
+	handle.CanQuery = false
+	handle.CanTouch = false
+	handle.Parent = hammerFolder
+	table.insert(hammerParts, handle)
+
+	local head = Instance.new("Part")
+	head.Size = Vector3.new(5, 1.5, 1.5)
+	head.Color = Color3.fromRGB(200, 0, 0)
+	head.Material = Enum.Material.Neon
+	head.Anchored = false
+	head.CanCollide = false
+	head.CanQuery = false
+	head.CanTouch = false
+	head.Parent = hammerFolder
+	table.insert(hammerParts, head)
+
+	local light = Instance.new("PointLight")
+	light.Color = Color3.fromRGB(255, 0, 0)
+	light.Brightness = 5
+	light.Range = 12
+	light.Parent = head
+end
+
+local function startHammer()
+	if hammerActive then return end
+	hammerActive = true
+	buildHammer()
+
+	hammerConnection = RunService.RenderStepped:Connect(function(dt)
+		if not hammerActive or not rootPart or not hammerParts[1] then return end
+		local cam = workspace.CurrentCamera
+
+		if hammerSlam then
+			hammerSlamOffset = math.min(8, hammerSlamOffset + dt * 50)
+		else
+			hammerSlamOffset = math.max(0, hammerSlamOffset - dt * 30)
+		end
+
+		local basePos = rootPart.Position + cam.CFrame.LookVector * 5 + cam.CFrame.UpVector * (5 - hammerSlamOffset)
+		local baseCF = CFrame.new(basePos, basePos + cam.CFrame.LookVector)
+
+		hammerParts[1].CFrame = baseCF
+		hammerParts[1].AssemblyLinearVelocity = Vector3.zero
+		hammerParts[1].AssemblyAngularVelocity = Vector3.zero
+
+		hammerParts[2].CFrame = baseCF * CFrame.new(0, 3, 0) * CFrame.Angles(0, 0, math.rad(90))
+		hammerParts[2].AssemblyLinearVelocity = Vector3.zero
+		hammerParts[2].AssemblyAngularVelocity = Vector3.zero
+
+		if hammerSlam and hammerSlamOffset >= 7 then
+			hammerSlam = false
+			local target = player:GetMouse().Target
+			if target then
+				local model = target:FindFirstAncestorOfClass("Model")
+				if model then
+					local tp = Players:GetPlayerFromCharacter(model)
+					if tp and tp ~= player then
+						local tr = model:FindFirstChild("HumanoidRootPart")
+						if tr then
+							for i = 1, 12 do
+								local block = Instance.new("Part")
+								block.Size = Vector3.new(1.5, 1.5, 1.5)
+								block.Color = Color3.fromRGB(255, math.random(0, 80), 0)
+								block.Material = Enum.Material.Neon
+								block.Anchored = false
+								block.CanCollide = false
+								block.Position = tr.Position
+								block.Parent = workspace
+
+								local bv = Instance.new("BodyVelocity")
+								bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+								bv.Velocity = Vector3.new(math.random(-150,150), math.random(100,250), math.random(-150,150))
+								bv.Parent = block
+								Debris:AddItem(bv, 0.5)
+								Debris:AddItem(block, 3)
+							end
+
+							local fv = Instance.new("BodyVelocity")
+							fv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+							fv.Velocity = Vector3.new(math.random(-100,100), 250, math.random(-100,100))
+							fv.Parent = tr
+							Debris:AddItem(fv, 0.5)
+
+							local sp = Instance.new("BodyAngularVelocity")
+							sp.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
+							sp.AngularVelocity = Vector3.new(200, 200, 200)
+							sp.Parent = tr
+							Debris:AddItem(sp, 1)
+						end
+					end
+				end
+			end
+		end
+	end)
+
+	hammerClickConn = UserInputService.InputBegan:Connect(function(input, processed)
+		if processed then return end
+		if input.UserInputType == Enum.UserInputType.MouseButton1 and hammerActive then
+			hammerSlam = true
+			hammerSlamOffset = 0
+		end
+	end)
+end
+
+local function stopHammer()
+	hammerActive = false
+	if hammerConnection then hammerConnection:Disconnect() hammerConnection = nil end
+	if hammerClickConn then hammerClickConn:Disconnect() hammerClickConn = nil end
+	if hammerFolder then hammerFolder:Destroy() hammerFolder = nil end
+	hammerParts = {}
+end
+
+player.CharacterAdded:Connect(function()
+	if hammerActive then stopHammer() end
+end)
+
 -- SUPER RING
 local SUPER_RING_RADIUS = 12
 local SUPER_RING_ORBIT = 8
