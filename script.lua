@@ -1,7 +1,5 @@
--- c00lgui Reborn - Complete Edition (All Features + Hands)
--- GitHub: toxfuly-ctrl/coolguiv2
--- Loader: loadstring(game:HttpGet("https://raw.githubusercontent.com/toxfuly-ctrl/coolguiv2/main/script.lua"))()
-print("=== SCRIPT STARTING ===")
+-- c00lgui Reborn - With Block Shooter + Red World
+-- Paste into Solara
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -10,8 +8,6 @@ local SoundService = game:GetService("SoundService")
 local Lighting = game:GetService("Lighting")
 local StarterGui = game:GetService("StarterGui")
 local Debris = game:GetService("Debris")
-
--- workspace.FallenPartsDestroyHeight = -100000
 
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
@@ -24,17 +20,19 @@ player.CharacterAdded:Connect(function(newChar)
 	rootPart = newChar:WaitForChild("HumanoidRootPart")
 end)
 
-local BG_DARK = Color3.fromRGB(15, 0, 0)
-local BG_PANEL = Color3.fromRGB(25, 0, 0)
-local RED_BRIGHT = Color3.fromRGB(200, 0, 0)
-local RED_DARK = Color3.fromRGB(90, 0, 0)
-local RED_BORDER = Color3.fromRGB(255, 0, 0)
-local TEXT_WHITE = Color3.fromRGB(255, 255, 255)
+------------------------------------------------------------
+-- COLORS
+------------------------------------------------------------
+local BG_DARK     = Color3.fromRGB(15, 0, 0)
+local BG_PANEL    = Color3.fromRGB(25, 0, 0)
+local RED_BRIGHT  = Color3.fromRGB(200, 0, 0)
+local RED_DARK    = Color3.fromRGB(90, 0, 0)
+local RED_BORDER  = Color3.fromRGB(255, 0, 0)
+local TEXT_WHITE  = Color3.fromRGB(255, 255, 255)
 
-local HAND_TAN = Color3.fromRGB(160, 140, 90)
-local HAND_CYAN = Color3.fromRGB(80, 230, 200)
-local HAND_CHAIN = Color3.fromRGB(180, 180, 180)
-
+------------------------------------------------------------
+-- MAIN GUI
+------------------------------------------------------------
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CoolKidGui"
 screenGui.ResetOnSpawn = false
@@ -90,67 +88,9 @@ closeCorner.Parent = closeBtn
 
 closeBtn.MouseButton1Click:Connect(function() main.Visible = false end)
 
--- HAND BUILDER
-
-local function makePart(parent, size, cframe, color, material, transparency)
-	local p = Instance.new("Part")
-	p.Size = size
-	p.CFrame = cframe
-	p.Color = color
-	p.Material = material or Enum.Material.SmoothPlastic
-	p.Transparency = transparency or 0
-	p.Anchored = false
-	p.CanCollide = false
-	p.CanQuery = false
-	p.CanTouch = false
-	p.Parent = parent
-	return p
-end
-
-local function buildHand(folder, baseCFrame, openFingers)
-	local parts = {}
-
-	local palm = makePart(folder, Vector3.new(10, 4, 10), baseCFrame, HAND_TAN, Enum.Material.SmoothPlastic, 0)
-	table.insert(parts, palm)
-
-	local eye = makePart(folder, Vector3.new(6, 0.5, 6), baseCFrame * CFrame.new(0, 2.3, 0), HAND_CYAN, Enum.Material.Neon, 0)
-	table.insert(parts, eye)
-
-	local fingerXs = {-3.5, -1.75, 0, 1.75, 3.5}
-	for i, x in ipairs(fingerXs) do
-		local seg1 = makePart(folder, Vector3.new(1.6, 3, 1.6), baseCFrame * CFrame.new(x, 3.5, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
-		table.insert(parts, seg1)
-
-		local joint1 = makePart(folder, Vector3.new(1.2, 0.6, 1.2), baseCFrame * CFrame.new(x, 5.1, 0), HAND_CYAN, Enum.Material.Neon, 0)
-		table.insert(parts, joint1)
-
-		local chain1 = makePart(folder, Vector3.new(0.4, 1.5, 0.4), baseCFrame * CFrame.new(x, 5.8, 0), HAND_CHAIN, Enum.Material.Metal, 0)
-		table.insert(parts, chain1)
-
-		local seg2Y = openFingers and 7.2 or 6.8
-		local seg2 = makePart(folder, Vector3.new(1.4, 2.5, 1.4), baseCFrame * CFrame.new(x, seg2Y, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
-		table.insert(parts, seg2)
-
-		local joint2 = makePart(folder, Vector3.new(1.2, 0.6, 1.2), baseCFrame * CFrame.new(x, seg2Y + 1.3, 0), HAND_CYAN, Enum.Material.Neon, 0)
-		table.insert(parts, joint2)
-
-		local seg3Y = openFingers and seg2Y + 2.5 or seg2Y + 1.8
-		local seg3 = makePart(folder, Vector3.new(1.2, 2, 1.2), baseCFrame * CFrame.new(x, seg3Y, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
-		table.insert(parts, seg3)
-	end
-
-	local thumbJoint = makePart(folder, Vector3.new(1.2, 0.6, 1.2), baseCFrame * CFrame.new(-5.5, 0, 0), HAND_CYAN, Enum.Material.Neon, 0)
-	table.insert(parts, thumbJoint)
-
-	local thumb = makePart(folder, Vector3.new(2, 3, 1.5), baseCFrame * CFrame.new(-6.8, -1, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
-	table.insert(parts, thumb)
-
-	local thumbTip = makePart(folder, Vector3.new(1.5, 2, 1.2), baseCFrame * CFrame.new(-7.8, -2.8, 0), HAND_TAN, Enum.Material.SmoothPlastic, 0)
-	table.insert(parts, thumbTip)
-
-	return parts
-end
-
+------------------------------------------------------------
+-- PAGE NAV BAR
+------------------------------------------------------------
 local navBar = Instance.new("Frame")
 navBar.Size = UDim2.new(1, -12, 0, 30)
 navBar.Position = UDim2.new(0, 6, 0, 34)
@@ -215,7 +155,7 @@ local function createPage(name)
 	pagePad.Parent = page
 
 	local navBtn = Instance.new("TextButton")
-	navBtn.Size = UDim2.new(0, 38, 1, -6)
+	navBtn.Size = UDim2.new(0, 42, 1, -6)
 	navBtn.BackgroundColor3 = RED_DARK
 	navBtn.BorderSizePixel = 0
 	navBtn.Text = name
@@ -961,8 +901,235 @@ end
 player.CharacterAdded:Connect(function() if flingAuraActive then stopFlingAura() end end)
 
 ------------------------------------------------------------
--- C00LKIDD PAGE - SUPER RING
+-- C00LKIDD PAGE FEATURES
 ------------------------------------------------------------
+
+-- CLICK EXPLODE (final version)
+
+local explodeActive = false
+local explodeConn = nil
+
+local function explodeTarget(targetPlayer)
+	if not targetPlayer or targetPlayer == player then return end
+	if _G.coolkid_flinging then return end
+
+	local myChar = player.Character
+	local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
+	local myRoot = myHum and myHum.RootPart
+
+	local tChar = targetPlayer.Character
+	if not tChar then return end
+	local tHum = tChar:FindFirstChildOfClass("Humanoid")
+	local tRoot = tHum and tHum.RootPart
+	local tHead = tChar:FindFirstChild("Head")
+
+	if not (myChar and myHum and myRoot) then return end
+	if not (tHum and tRoot) then return end
+
+	_G.coolkid_flinging = true
+
+	local savedCFrame = myRoot.CFrame
+	local savedHealth = myHum.Health
+	local savedFPDH = workspace.FallenPartsDestroyHeight
+
+	local savedCollide = {}
+	for _, p in ipairs(myChar:GetDescendants()) do
+		if p:IsA("BasePart") then
+			savedCollide[p] = p.CanCollide
+			p.CanCollide = false
+		end
+	end
+
+	if tHead then
+		workspace.CurrentCamera.CameraSubject = tHead
+	else
+		workspace.CurrentCamera.CameraSubject = tHum
+	end
+
+	workspace.FallenPartsDestroyHeight = 0 / 0
+	myHum.PlatformStand = true
+
+	-- Red explosion at their position
+	for i = 1, 20 do
+		local chunk = Instance.new("Part")
+		chunk.Size = Vector3.new(1.5, 1.5, 1.5)
+		chunk.Color = Color3.fromRGB(255, math.random(0, 80), 0)
+		chunk.Material = Enum.Material.Neon
+		chunk.Anchored = false
+		chunk.CanCollide = false
+		chunk.Position = tRoot.Position + Vector3.new(math.random(-2,2), math.random(0,4), math.random(-2,2))
+		chunk.Parent = workspace
+
+		local cbv = Instance.new("BodyVelocity")
+		cbv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+		cbv.Velocity = Vector3.new(math.random(-150,150), math.random(100,250), math.random(-150,150))
+		cbv.Parent = chunk
+		Debris:AddItem(cbv, 0.5)
+		Debris:AddItem(chunk, 3)
+	end
+
+	local flash = Instance.new("Part")
+	flash.Shape = Enum.PartType.Ball
+	flash.Size = Vector3.new(6, 6, 6)
+	flash.Color = Color3.fromRGB(255, 0, 0)
+	flash.Material = Enum.Material.Neon
+	flash.Anchored = false
+	flash.CanCollide = false
+	flash.Transparency = 0.3
+	flash.Position = tRoot.Position
+	flash.Parent = workspace
+
+	local fl = Instance.new("PointLight")
+	fl.Color = Color3.fromRGB(255, 0, 0)
+	fl.Brightness = 10
+	fl.Range = 30
+	fl.Parent = flash
+	Debris:AddItem(flash, 0.5)
+
+	-- Spin fling (YARHM method)
+	local function FPos(BasePart, Pos, Ang)
+		myRoot.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
+		myChar:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
+		myRoot.Velocity = Vector3.new(9e7, 9e7 * 10, 9e7)
+		myRoot.RotVelocity = Vector3.new(9e8, 9e8, 9e8)
+	end
+
+	local function spinLoop(BasePart)
+		local TimeToWait = 0.4
+		local Time = tick()
+		local Angle = 0
+		repeat
+			if myRoot and tHum then
+				if BasePart.Velocity.Magnitude < 50 then
+					Angle = Angle + 100
+					FPos(BasePart, CFrame.new(0, 1.5, 0) + tHum.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(0, -1.5, 0) + tHum.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(2.25, 1.5, -2.25) + tHum.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(-2.25, -1.5, 2.25) + tHum.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+					task.wait()
+				else
+					FPos(BasePart, CFrame.new(0, 1.5, tHum.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(0, -1.5, -tHum.WalkSpeed), CFrame.Angles(0, 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(0, 1.5, tHum.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(0, 1.5, tRoot.Velocity.Magnitude / 1.25), CFrame.Angles(math.rad(90), 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(0, -1.5, -tRoot.Velocity.Magnitude / 1.25), CFrame.Angles(0, 0, 0))
+					task.wait()
+				end
+			else
+				break
+			end
+		until BasePart.Velocity.Magnitude > 500 
+			or BasePart.Parent ~= tChar 
+			or targetPlayer.Parent ~= Players 
+			or targetPlayer.Character ~= tChar 
+			or tHum.Sit 
+			or myHum.Health <= 0 
+			or tick() > Time + TimeToWait
+	end
+
+	local BV = Instance.new("BodyVelocity")
+	BV.Parent = myRoot
+	BV.Velocity = Vector3.new(9e8, 9e8, 9e8)
+	BV.MaxForce = Vector3.new(1/0, 1/0, 1/0)
+
+	myHum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+
+	if tRoot and tHead then
+		if (tRoot.CFrame.p - tHead.CFrame.p).Magnitude > 5 then
+			spinLoop(tHead)
+		else
+			spinLoop(tRoot)
+		end
+	elseif tRoot and not tHead then
+		spinLoop(tRoot)
+	elseif not tRoot and tHead then
+		spinLoop(tHead)
+	end
+
+	task.wait(0.15)
+
+	if BV then BV:Destroy() end
+	pcall(function() myHum:SetStateEnabled(Enum.HumanoidStateType.Seated, true) end)
+
+	if myChar then
+		for _, part in ipairs(myChar:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.Velocity = Vector3.zero
+				part.RotVelocity = Vector3.zero
+			end
+		end
+	end
+
+	if myRoot then myRoot.CFrame = savedCFrame end
+
+	for p, state in pairs(savedCollide) do
+		if p and p.Parent then p.CanCollide = state end
+	end
+
+	workspace.CurrentCamera.CameraSubject = myHum
+	workspace.FallenPartsDestroyHeight = savedFPDH
+
+	task.wait(0.05)
+
+	if myChar then
+		for _, part in ipairs(myChar:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.Velocity = Vector3.zero
+				part.RotVelocity = Vector3.zero
+			end
+		end
+	end
+
+	if myHum and myHum.Parent then
+		pcall(function()
+			myHum.Health = math.max(myHum.Health, savedHealth, myHum.MaxHealth)
+		end)
+	end
+
+	myHum.PlatformStand = false
+	_G.coolkid_flinging = false
+end
+
+local function enableExplode()
+	if explodeActive then return end
+	explodeActive = true
+
+	explodeConn = UserInputService.InputBegan:Connect(function(input, processed)
+		if processed then return end
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 
+		and input.UserInputType ~= Enum.UserInputType.Touch then return end
+		if not explodeActive then return end
+
+		local mouse = player:GetMouse()
+		local target = mouse.Target
+		if not target then return end
+
+		local model = target:FindFirstAncestorOfClass("Model")
+		if not model then return end
+
+		local targetPlayer = Players:GetPlayerFromCharacter(model)
+		if targetPlayer and targetPlayer ~= player then
+			explodeTarget(targetPlayer)
+		end
+	end)
+end
+
+local function disableExplode()
+	explodeActive = false
+	if explodeConn then
+		explodeConn:Disconnect()
+		explodeConn = nil
+	end
+end
+
+-- SUPER RING
 local SUPER_RING_RADIUS = 12
 local SUPER_RING_ORBIT = 8
 local SUPER_RING_SPEED = 2
@@ -1043,66 +1210,7 @@ end
 
 player.CharacterAdded:Connect(function() if superRingActive then stopSuperRing() end end)
 
-------------------------------------------------------------
--- TORNADO
-------------------------------------------------------------
-local tornadoActive = false
-local tornadoParts = {}
-local tornadoConnection
-
-local function startTornado()
-	if tornadoActive then return end
-	tornadoActive = true
-	tornadoParts = {}
-
-	for i = 1, 30 do
-		local part = Instance.new("Part")
-		part.Size = Vector3.new(1.5, 1.5, 1.5)
-		part.Color = Color3.fromRGB(200, 200, 200)
-		part.Anchored = false
-		part.CanCollide = false
-		part.Parent = workspace
-		table.insert(tornadoParts, part)
-	end
-
-	local angle = 0
-	tornadoConnection = RunService.Heartbeat:Connect(function(dt)
-		if not tornadoActive or not rootPart or not rootPart.Parent then return end
-		angle = angle + dt * 6
-		local center = rootPart.Position
-
-		for i, part in ipairs(tornadoParts) do
-			if part and part.Parent then
-				local height = i * 0.8
-				local radius = 2 + math.sin(i / 5) * 2
-				local partAngle = angle + (i * 0.3)
-				local offset = Vector3.new(
-					math.cos(partAngle) * radius,
-					height,
-					math.sin(partAngle) * radius
-				)
-				local targetPos = center + offset
-				part.CFrame = CFrame.new(targetPos) * CFrame.Angles(angle, angle, 0)
-				part.AssemblyLinearVelocity = (targetPos - part.Position) / dt
-			end
-		end
-	end)
-end
-
-local function stopTornado()
-	tornadoActive = false
-	if tornadoConnection then tornadoConnection:Disconnect() tornadoConnection = nil end
-	for _, part in ipairs(tornadoParts) do
-		if part and part.Parent then part:Destroy() end
-	end
-	tornadoParts = {}
-end
-
-player.CharacterAdded:Connect(function() if tornadoActive then stopTornado() end end)
-
-------------------------------------------------------------
 -- RED PAD
-------------------------------------------------------------
 local redPadActive = false
 local redPadPart
 local redPadConnection
@@ -1138,9 +1246,7 @@ end
 
 player.CharacterAdded:Connect(function() if redPadActive then stopRedPad() end end)
 
-------------------------------------------------------------
 -- RED SKY
-------------------------------------------------------------
 local redSkyActive = false
 local originalSky = nil
 local redSky = nil
@@ -1173,9 +1279,7 @@ local function stopRedSky()
 	if originalSky then originalSky.Parent = Lighting end
 end
 
-------------------------------------------------------------
 -- CAGE
-------------------------------------------------------------
 local cageActive = false
 local cageParts = {}
 
@@ -1219,9 +1323,7 @@ local function stopCage()
 	cageParts = {}
 end
 
-------------------------------------------------------------
 -- BLOCK STORM
-------------------------------------------------------------
 local stormActive = false
 local stormConnection
 
@@ -1254,9 +1356,7 @@ local function stopStorm()
 	if stormConnection then stormConnection:Disconnect() stormConnection = nil end
 end
 
-------------------------------------------------------------
 -- BLACK HOLE
-------------------------------------------------------------
 local BLACK_HOLE_RANGE = 15
 local BLACK_HOLE_FORCE = 100
 
@@ -1386,310 +1486,217 @@ end
 
 player.CharacterAdded:Connect(function() if holeActive then stopBlackHole() end end)
 
-------------------------------------------------------------
--- GUN HAND
-------------------------------------------------------------
-local gunHandActive = false
-local gunHandFolder = nil
-local gunHandConnection = nil
-local gunHandClickConn = nil
-local gunHandParts = {}
+-- RED WORLD (spawn + big parts, never falls)
+local RED_WORLD_MIN_SIZE = 20
+local redWorldActive = false
+local redWorldParts = {}
+local redWorldConnection
 
-local function fireGunHand()
-	if not gunHandActive or not rootPart then return end
-	local cam = workspace.CurrentCamera
-	local startPos = gunHandParts[1] and gunHandParts[1].Position or rootPart.Position
-	local dir = cam.CFrame.LookVector
+local function startRedWorld()
+	if redWorldActive then return end
+	redWorldActive = true
+	redWorldParts = {}
+
+	-- Clone spawn locations and big parts
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") and obj ~= rootPart then
+			local isBigPart = obj.Size.Magnitude > RED_WORLD_MIN_SIZE and obj.Size.Magnitude < 500
+			local isSpawn = obj.Name:lower():find("spawn") or obj:IsA("SpawnLocation")
+
+			if isBigPart or isSpawn then
+				pcall(function()
+					local clone = obj:Clone()
+					clone.Anchored = false
+					clone.CanCollide = false
+					clone.CanQuery = false
+					clone.CanTouch = false
+					clone.CastShadow = false
+					clone.Color = Color3.fromRGB(255, 0, 0)
+					clone.Material = Enum.Material.Neon
+					clone.Transparency = 0
+					clone.Parent = workspace
+
+					table.insert(redWorldParts, {
+						part = clone,
+						originalCFrame = obj.CFrame
+					})
+				end)
+			end
+		end
+	end
+
+	-- Every frame, force CFrame + zero velocity (never falls)
+	redWorldConnection = RunService.Heartbeat:Connect(function()
+		if not redWorldActive then return end
+		for _, data in ipairs(redWorldParts) do
+			if data.part and data.part.Parent then
+				data.part.CFrame = data.originalCFrame
+				data.part.AssemblyLinearVelocity = Vector3.zero
+				data.part.AssemblyAngularVelocity = Vector3.zero
+			end
+		end
+	end)
+end
+
+local function stopRedWorld()
+	redWorldActive = false
+	if redWorldConnection then redWorldConnection:Disconnect() redWorldConnection = nil end
+	for _, data in ipairs(redWorldParts) do
+		if data.part and data.part.Parent then
+			data.part:Destroy()
+		end
+	end
+	redWorldParts = {}
+end
+
+player.CharacterAdded:Connect(function() if redWorldActive then stopRedWorld() end end)
+
+-- BLOCK SHOOTER (5 blocks float above, fire one by one)
+local shooterActive = false
+local shooterBlocks = {}
+local shooterBobbing = 0
+local shooterConnection
+local shooterLastFire = 0
+local shooterCanFire = true
+
+local function buildShooterBlocks()
+	for _, b in ipairs(shooterBlocks) do
+		if b and b.Parent then b:Destroy() end
+	end
+	shooterBlocks = {}
+
+	for i = 0, 5 do
+		local block = Instance.new("Part")
+		block.Size = Vector3.new(3, 3, 3)
+		block.Color = Color3.fromRGB(255, 0, 0)
+		block.Material = Enum.Material.Neon
+		block.Anchored = false
+		block.CanCollide = false
+		block.CanQuery = false
+		block.CanTouch = false
+		block.Parent = workspace
+		table.insert(shooterBlocks, block)
+	end
+end
+
+local function fireOneBlock()
+	-- Find the first available (unfired) block
+	local block = nil
+	for _, b in ipairs(shooterBlocks) do
+		if b and b.Parent and not b:GetAttribute("fired") then
+			block = b
+			break
+		end
+	end
+	if not block then return false end
+
+	block:SetAttribute("fired", true)
+
+	-- Aim at mouse
 	local mouse = player:GetMouse()
-	if mouse and mouse.Hit then
-		dir = (mouse.Hit.Position - startPos).Unit
+	local target = mouse.Hit.Position
+	local startPos = block.Position
+	local dir = (target - startPos).Unit
+
+	-- Fire it
+	local bv = Instance.new("BodyVelocity")
+	bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+	bv.Velocity = dir * 200
+	bv.Parent = block
+
+	Debris:AddItem(bv, 2)
+	Debris:AddItem(block, 5)
+
+	-- Fling on touch
+	block.Touched:Connect(function(hit)
+		local model = hit:FindFirstAncestorOfClass("Model")
+		if model then
+			local hitPlayer = Players:GetPlayerFromCharacter(model)
+			if hitPlayer and hitPlayer ~= player then
+				local hRoot = model:FindFirstChild("HumanoidRootPart")
+				if hRoot then
+					local hbv = Instance.new("BodyVelocity")
+					hbv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+					hbv.Velocity = dir * 300 + Vector3.new(0, 200, 0)
+					hbv.Parent = hRoot
+					Debris:AddItem(hbv, 0.5)
+				end
+			end
+		end
+	end)
+
+	return true
+end
+
+local function fireAllBlocks()
+	if not shooterCanFire then return end
+	shooterCanFire = false
+
+	task.spawn(function()
+		for i = 1, 5 do
+			local fired = fireOneBlock()
+			if not fired then break end
+			if i < 5 then
+				task.wait(0.1)
+			end
+		end
+
+		-- Cooldown then respawn
+		task.wait(0)
+		buildShooterBlocks()
+		shooterCanFire = true
+	end)
+end
+
+local function startShooter()
+	if shooterActive then return end
+	shooterActive = true
+
+	buildShooterBlocks()
+
+	shooterConnection = RunService.Heartbeat:Connect(function()
+		if not shooterActive or not rootPart then return end
+		shooterBobbing = shooterBobbing + 0.05
+
+		local basePos = rootPart.Position + Vector3.new(0, 8, 0)
+		local count = 0
+		for _, block in ipairs(shooterBlocks) do
+			if block and block.Parent and not block:GetAttribute("fired") then
+				count = count + 1
+				local angle = (count - 1) * (math.pi * 2 / 5)
+				local offset = Vector3.new(
+					math.cos(angle) * 3,
+					math.sin(shooterBobbing + count) * 0,
+					math.sin(angle) * 3
+				)
+				local targetPos = basePos + offset
+				block.CFrame = CFrame.new(targetPos)
+				block.AssemblyLinearVelocity = Vector3.zero
+				block.AssemblyAngularVelocity = Vector3.zero
+			end
+		end
+	end)
+
+	-- Click to fire
+	UserInputService.InputBegan:Connect(function(input, processed)
+		if processed then return end
+		if not shooterActive then return end
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			fireAllBlocks()
+		end
+	end)
+end
+
+local function stopShooter()
+	shooterActive = false
+	if shooterConnection then shooterConnection:Disconnect() shooterConnection = nil end
+	for _, b in ipairs(shooterBlocks) do
+		if b and b.Parent then b:Destroy() end
 	end
-
-	for i = 1, 5 do
-		local bullet = Instance.new("Part")
-		bullet.Size = Vector3.new(2, 2, 2)
-		bullet.Color = HAND_TAN
-		bullet.Material = Enum.Material.Neon
-		bullet.Anchored = false
-		bullet.CanCollide = false
-		bullet.CFrame = CFrame.new(startPos + dir * (5 + i))
-		bullet.Parent = workspace
-
-		local bv = Instance.new("BodyVelocity")
-		bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-		bv.Velocity = dir * 200
-		bv.Parent = bullet
-
-		Debris:AddItem(bv, 2)
-		Debris:AddItem(bullet, 5)
-
-		task.spawn(function()
-			local hit = false
-			bullet.Touched:Connect(function(part)
-				if hit then return end
-				local model = part:FindFirstAncestorOfClass("Model")
-				if model then
-					local hitPlayer = Players:GetPlayerFromCharacter(model)
-					if hitPlayer and hitPlayer ~= player then
-						hit = true
-						local hRoot = model:FindFirstChild("HumanoidRootPart")
-						if hRoot then
-							local hbv = Instance.new("BodyVelocity")
-							hbv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-							hbv.Velocity = dir * 300 + Vector3.new(0, 200, 0)
-							hbv.Parent = hRoot
-							Debris:AddItem(hbv, 0.5)
-						end
-					end
-				end
-			end)
-		end)
-	end
+	shooterBlocks = {}
 end
 
-local function startGunHand()
-	if gunHandActive then return end
-	gunHandActive = true
-
-	if gunHandFolder then gunHandFolder:Destroy() end
-	gunHandFolder = Instance.new("Folder")
-	gunHandFolder.Name = "CoolKidGunHand"
-	gunHandFolder.Parent = workspace
-
-	local cam = workspace.CurrentCamera
-	local basePos = rootPart.Position + cam.CFrame.LookVector * 10 + cam.CFrame.UpVector * 2
-	local baseCF = CFrame.new(basePos, basePos + cam.CFrame.LookVector)
-	gunHandParts = buildHand(gunHandFolder, baseCF, false)
-
-	gunHandConnection = RunService.RenderStepped:Connect(function(dt)
-		if not gunHandActive or not rootPart or not gunHandParts[1] then return end
-		local cam = workspace.CurrentCamera
-		local offset = Vector3.new(4, 2, 10)
-		local basePos = rootPart.Position
-			+ cam.CFrame.LookVector * offset.Z
-			+ cam.CFrame.RightVector * offset.X
-			+ cam.CFrame.UpVector * offset.Y
-		local baseCF = CFrame.new(basePos, basePos + cam.CFrame.LookVector)
-
-		local delta = baseCF * gunHandParts[1].CFrame:Inverse()
-		for _, p in ipairs(gunHandParts) do
-			if p and p.Parent then
-				p.CFrame = delta * p.CFrame
-				p.AssemblyLinearVelocity = Vector3.zero
-				p.AssemblyAngularVelocity = Vector3.zero
-			end
-		end
-	end)
-
-	gunHandClickConn = UserInputService.InputBegan:Connect(function(input, processed)
-		if processed then return end
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			fireGunHand()
-		end
-	end)
-end
-
-local function stopGunHand()
-	gunHandActive = false
-	if gunHandConnection then gunHandConnection:Disconnect() gunHandConnection = nil end
-	if gunHandClickConn then gunHandClickConn:Disconnect() gunHandClickConn = nil end
-	if gunHandFolder then gunHandFolder:Destroy() gunHandFolder = nil end
-	gunHandParts = {}
-end
-
-player.CharacterAdded:Connect(function() if gunHandActive then stopGunHand() end end)
-
-------------------------------------------------------------
--- SQUISH HAND
-------------------------------------------------------------
-local squishHandActive = false
-local squishHandFolder = nil
-local squishHandConnection = nil
-local squishHandClickConn = nil
-local squishHandParts = {}
-local squishOffset = 0
-local squishSlam = false
-
-local function startSquishHand()
-	if squishHandActive then return end
-	squishHandActive = true
-
-	if squishHandFolder then squishHandFolder:Destroy() end
-	squishHandFolder = Instance.new("Folder")
-	squishHandFolder.Name = "CoolKidSquishHand"
-	squishHandFolder.Parent = workspace
-
-	local cam = workspace.CurrentCamera
-	local basePos = rootPart.Position + cam.CFrame.LookVector * 10 + cam.CFrame.UpVector * 2
-	local baseCF = CFrame.new(basePos, basePos + cam.CFrame.LookVector)
-	squishHandParts = buildHand(squishHandFolder, baseCF, true)
-
-	squishHandConnection = RunService.RenderStepped:Connect(function(dt)
-		if not squishHandActive or not rootPart or not squishHandParts[1] then return end
-		local cam = workspace.CurrentCamera
-
-		if squishSlam then
-			squishOffset = squishOffset + dt * 80
-			if squishOffset > 25 then squishOffset = 25 end
-		else
-			squishOffset = math.max(0, squishOffset - dt * 60)
-		end
-
-		local basePos = rootPart.Position
-			+ cam.CFrame.LookVector * (10 + squishOffset)
-			+ cam.CFrame.UpVector * 4
-		local baseCF = CFrame.new(basePos, basePos + cam.CFrame.LookVector)
-
-		local delta = baseCF * squishHandParts[1].CFrame:Inverse()
-		for _, p in ipairs(squishHandParts) do
-			if p and p.Parent then
-				p.CFrame = delta * p.CFrame
-				p.AssemblyLinearVelocity = Vector3.zero
-				p.AssemblyAngularVelocity = Vector3.zero
-			end
-		end
-
-		if squishSlam then
-			local palm = squishHandParts[1]
-			if palm then
-				for _, p in ipairs(Players:GetPlayers()) do
-					if p ~= player and p.Character then
-						local tRoot = p.Character:FindFirstChild("HumanoidRootPart")
-						if tRoot and (tRoot.Position - palm.Position).Magnitude < 12 then
-							for _, part in ipairs(p.Character:GetDescendants()) do
-								if part:IsA("BasePart") and part.Size.Y > 0.3 then
-									part.Size = Vector3.new(part.Size.X, part.Size.Y * 0.5, part.Size.Z)
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-
-		if squishSlam and squishOffset >= 25 then
-			task.delay(0.15, function() squishSlam = false end)
-		end
-	end)
-
-	squishHandClickConn = UserInputService.InputBegan:Connect(function(input, processed)
-		if processed then return end
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			squishSlam = true
-			squishOffset = 0
-		end
-	end)
-end
-
-local function stopSquishHand()
-	squishHandActive = false
-	if squishHandConnection then squishHandConnection:Disconnect() squishHandConnection = nil end
-	if squishHandClickConn then squishHandClickConn:Disconnect() squishHandClickConn = nil end
-	if squishHandFolder then squishHandFolder:Destroy() squishHandFolder = nil end
-	squishHandParts = {}
-end
-
-player.CharacterAdded:Connect(function() if squishHandActive then stopSquishHand() end end)
-
-------------------------------------------------------------
--- CLAP HAND
-------------------------------------------------------------
-local clapHandActive = false
-local clapHandFolder = nil
-local clapHandConnection = nil
-local clapHandClickConn = nil
-local clapParts = {}
-local clapSpacing = 15
-local clapActive = false
-
-local function startClapHand()
-	if clapHandActive then return end
-	clapHandActive = true
-
-	if clapHandFolder then clapHandFolder:Destroy() end
-	clapHandFolder = Instance.new("Folder")
-	clapHandFolder.Name = "CoolKidClapHands"
-	clapHandFolder.Parent = workspace
-
-	clapParts = {}
-
-	local cam = workspace.CurrentCamera
-	local centerPos = rootPart.Position + cam.CFrame.LookVector * 10
-	local baseCF = CFrame.new(centerPos, centerPos + cam.CFrame.LookVector)
-
-	local leftFolder = Instance.new("Folder")
-	leftFolder.Name = "LeftHand"
-	leftFolder.Parent = clapHandFolder
-
-	local rightFolder = Instance.new("Folder")
-	rightFolder.Name = "RightHand"
-	rightFolder.Parent = clapHandFolder
-
-	clapParts.left = buildHand(leftFolder, baseCF * CFrame.new(-clapSpacing, 0, 0), true)
-	clapParts.right = buildHand(rightFolder, baseCF * CFrame.new(clapSpacing, 0, 0), true)
-
-	clapHandConnection = RunService.RenderStepped:Connect(function(dt)
-		if not clapHandActive or not rootPart then return end
-		local cam = workspace.CurrentCamera
-		local centerPos = rootPart.Position + cam.CFrame.LookVector * 10
-		local baseCF = CFrame.new(centerPos, centerPos + cam.CFrame.LookVector)
-
-		local spacing = clapActive and 2 or clapSpacing
-
-		local leftTarget = baseCF * CFrame.new(-spacing, 0, 0)
-		local rightTarget = baseCF * CFrame.new(spacing, 0, 0)
-
-		local function moveGroup(parts, target)
-			local delta = target * parts[1].CFrame:Inverse()
-			for _, p in ipairs(parts) do
-				if p and p.Parent then
-					p.CFrame = delta * p.CFrame
-					p.AssemblyLinearVelocity = Vector3.zero
-					p.AssemblyAngularVelocity = Vector3.zero
-				end
-			end
-		end
-
-		moveGroup(clapParts.left, leftTarget)
-		moveGroup(clapParts.right, rightTarget)
-
-		if clapActive then
-			local leftPalm = clapParts.left[1]
-			local rightPalm = clapParts.right[1]
-			local midPoint = (leftPalm.Position + rightPalm.Position) / 2
-			for _, p in ipairs(Players:GetPlayers()) do
-				if p ~= player and p.Character then
-					local tRoot = p.Character:FindFirstChild("HumanoidRootPart")
-					if tRoot and (tRoot.Position - midPoint).Magnitude < 8 then
-						local bv = Instance.new("BodyVelocity")
-						bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-						bv.Velocity = Vector3.new(0, 300, 0)
-						bv.Parent = tRoot
-						Debris:AddItem(bv, 0.5)
-					end
-				end
-			end
-		end
-	end)
-
-	clapHandClickConn = UserInputService.InputBegan:Connect(function(input, processed)
-		if processed then return end
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			clapActive = true
-			task.delay(0.2, function() clapActive = false end)
-		end
-	end)
-end
-
-local function stopClapHand()
-	clapHandActive = false
-	if clapHandConnection then clapHandConnection:Disconnect() clapHandConnection = nil end
-	if clapHandClickConn then clapHandClickConn:Disconnect() clapHandClickConn = nil end
-	if clapHandFolder then clapHandFolder:Destroy() clapHandFolder = nil end
-	clapParts = {}
-end
-
-player.CharacterAdded:Connect(function() if clapHandActive then stopClapHand() end end)
+player.CharacterAdded:Connect(function() if shooterActive then stopShooter() end end)
 
 ------------------------------------------------------------
 -- MM2 FUNCTIONS
@@ -1830,9 +1837,7 @@ end
 
 player.CharacterAdded:Connect(function() if sheriffAuraActive then stopSheriffAura() end end)
 
-------------------------------------------------------------
 -- ROLE ESP
-------------------------------------------------------------
 local roleESPActive = false
 local roleESPObjects = {}
 
@@ -1895,7 +1900,7 @@ local function stopRoleESP()
 end
 
 ------------------------------------------------------------
--- NAT DISASTER PREDICTOR
+-- NAT FEATURES
 ------------------------------------------------------------
 local disasterLabel = Instance.new("TextLabel")
 disasterLabel.Size = UDim2.new(0, 350, 0, 50)
@@ -1972,9 +1977,6 @@ local function stopPredictor()
 	if predictorConnection then predictorConnection:Disconnect() predictorConnection = nil end
 end
 
-------------------------------------------------------------
--- NAT SAFE SPOT ESP
-------------------------------------------------------------
 local safeSpotActive = false
 local safeSpotHighlights = {}
 
@@ -2004,9 +2006,6 @@ local function stopSafeSpot()
 	safeSpotHighlights = {}
 end
 
-------------------------------------------------------------
--- NAT STRUCTURE ESP
-------------------------------------------------------------
 local structActive = false
 local structHighlights = {}
 
@@ -2034,8 +2033,188 @@ local function stopStruct()
 end
 
 ------------------------------------------------------------
--- TP PANEL
+-- MUSIC PAGE
 ------------------------------------------------------------
+local currentMusic = nil
+
+local function playMusic(soundId, name)
+	if currentMusic then
+		currentMusic:Stop()
+		currentMusic:Destroy()
+		currentMusic = nil
+	end
+
+	local sound = Instance.new("Sound")
+	sound.Name = "CoolKidMusic"
+	sound.SoundId = "rbxassetid://" .. soundId
+	sound.Volume = 2
+	sound.Looped = true
+	sound.Parent = SoundService
+	sound:Play()
+	currentMusic = sound
+end
+
+local function stopMusic()
+	if currentMusic then
+		currentMusic:Stop()
+		currentMusic:Destroy()
+		currentMusic = nil
+	end
+end
+
+makeButton("Music", "c00lkidd Ashes", function()
+	playMusic("72404297743317", "c00lkidd Ashes")
+end)
+
+makeButton("Music", "Come Out c00lkidd", function()
+	playMusic("132020810128779", "Come Out c00lkidd")
+end)
+
+makeButton("Music", "c00lkidd Out", function()
+	playMusic("111524327688347", "c00lkidd Out")
+end)
+
+makeButton("Music", "c00lkidd Song", function()
+	playMusic("115520764429413", "c00lkidd Song")
+end)
+
+makeButton("Music", "Stop All Sounds", function()
+	stopMusic()
+end)
+-----------------------------------------------------------
+-- BUTTONS
+------------------------------------------------------------
+makeSlider("Main", "WalkSpeed", 15, 200, 16, function(v)
+	if humanoid and humanoid.Parent then humanoid.WalkSpeed = v end
+end)
+
+makeButton("Main", "Fly ON/OFF", function(btn)
+	if flying then stopFly() btn.Text = "Fly ON/OFF" else startFly() btn.Text = "Fly: ON" end
+end)
+
+makeButton("Main", "Noclip: OFF", function(btn)
+	if noclip then stopNoclip() btn.Text = "Noclip: OFF" else startNoclip() btn.Text = "Noclip: ON" end
+end)
+
+makeButton("Main", "Inf Jump: OFF", function(btn)
+	if infJump then stopInfJump() btn.Text = "Inf Jump: OFF" else startInfJump() btn.Text = "Inf Jump: ON" end
+end)
+
+makeButton("Main", "God Mode: OFF", function(btn)
+	if godModeActive then stopGodMode() btn.Text = "God Mode: OFF" else startGodMode() btn.Text = "God Mode: ON" end
+end)
+
+makeButton("Main", "Anti-Fling: OFF", function(btn)
+	if antiFlingActive then stopAntiFling() btn.Text = "Anti-Fling: OFF" else startAntiFling() btn.Text = "Anti-Fling: ON" end
+end)
+
+makeButton("Visual", "ESP: OFF", function(btn)
+	if espActive then stopESP() btn.Text = "ESP: OFF" else startESP() btn.Text = "ESP: ON" end
+end)
+
+makeButton("Visual", "Ghost: OFF", function(btn)
+	if ghost then ghost = false removeGhost() btn.Text = "Ghost: OFF" else ghost = true applyGhost() btn.Text = "Ghost: ON" end
+end)
+
+makeButton("Visual", "Red Glow: OFF", function(btn)
+	if redGlowActive then stopRedGlow() btn.Text = "Red Glow: OFF" else startRedGlow() btn.Text = "Red Glow: ON" end
+end)
+
+makeButton("Fun", "Say JOIN TEAM c00lkid", function() sayMessage() end)
+
+makeButton("Fun", "Spam Chat: OFF", function(btn)
+	if chatSpamActive then stopChatSpam() btn.Text = "Spam Chat: OFF" else startChatSpam() btn.Text = "Spam Chat: ON" end
+end)
+
+makeButton("c00lkidd", "Hammer: OFF", function(btn)
+	if hammerActive then
+		stopHammer()
+		btn.Text = "Hammer: OFF"
+	else
+		startHammer()
+		btn.Text = "Hammer: ON"
+	end
+end)
+
+makeButton("c00lkidd", "Super Ring: OFF", function(btn)
+	if superRingActive then stopSuperRing() btn.Text = "Super Ring: OFF" else startSuperRing() btn.Text = "Super Ring: ON" end
+end)
+
+makeButton("c00lkidd", "Click Explode: OFF", function(btn)
+	if explodeActive then
+		disableExplode()
+		btn.Text = "Click Explode: OFF"
+	else
+		enableExplode()
+		btn.Text = "Click Explode: ON"
+	end
+end)
+
+makeButton("c00lkidd", "Tornado: OFF", function(btn)
+	if tornadoActive then stopTornado() btn.Text = "Tornado: OFF" else startTornado() btn.Text = "Tornado: ON" end
+end)
+
+makeButton("c00lkidd", "Red Pad: OFF", function(btn)
+	if redPadActive then stopRedPad() btn.Text = "Red Pad: OFF" else startRedPad() btn.Text = "Red Pad: ON" end
+end)
+
+makeButton("c00lkidd", "Red Sky: OFF", function(btn)
+	if redSkyActive then stopRedSky() btn.Text = "Red Sky: OFF" else startRedSky() btn.Text = "Red Sky: ON" end
+end)
+
+makeButton("c00lkidd", "Cage: OFF", function(btn)
+	if cageActive then stopCage() btn.Text = "Cage: OFF" else startCage() btn.Text = "Cage: ON" end
+end)
+
+makeButton("c00lkidd", "Block Storm: OFF", function(btn)
+	if stormActive then stopStorm() btn.Text = "Block Storm: OFF" else startStorm() btn.Text = "Block Storm: ON" end
+end)
+
+makeButton("c00lkidd", "Black Hole: OFF", function(btn)
+	if holeActive then stopBlackHole() btn.Text = "Black Hole: OFF" else startBlackHole() btn.Text = "Black Hole: ON" end
+end)
+
+makeButton("c00lkidd", "Red World: OFF", function(btn)
+	if redWorldActive then stopRedWorld() btn.Text = "Red World: OFF" else startRedWorld() btn.Text = "Red World: ON" end
+end)
+
+makeButton("c00lkidd", "Block Shooter: OFF", function(btn)
+	if shooterActive then stopShooter() btn.Text = "Block Shooter: OFF" else startShooter() btn.Text = "Block Shooter: ON" end
+end)
+
+makeButton("Nat", "Disaster Predictor: OFF", function(btn)
+	if predictorActive then stopPredictor() btn.Text = "Disaster Predictor: OFF" else startPredictor() btn.Text = "Disaster Predictor: ON" end
+end)
+
+makeButton("Nat", "Safe Spot ESP: OFF", function(btn)
+	if safeSpotActive then stopSafeSpot() btn.Text = "Safe Spot ESP: OFF" else startSafeSpot() btn.Text = "Safe Spot ESP: ON" end
+end)
+
+makeButton("Nat", "Structure ESP: OFF", function(btn)
+	if structActive then stopStruct() btn.Text = "Structure ESP: OFF" else startStruct() btn.Text = "Structure ESP: ON" end
+end)
+
+makeButton("MM2", "Kill Closest", function() killClosest() end)
+
+makeSlider("MM2", "Kill Aura Range", 0, 50, 7, function(v) KILL_AURA_RANGE = v end)
+
+makeButton("MM2", "Kill Aura: OFF", function(btn)
+	if killAuraActive then stopKillAura() btn.Text = "Kill Aura: OFF" else startKillAura() btn.Text = "Kill Aura: ON" end
+end)
+
+makeButton("MM2", "Sheriff Aura: OFF", function(btn)
+	if sheriffAuraActive then stopSheriffAura() btn.Text = "Sheriff Aura: OFF" else startSheriffAura() btn.Text = "Sheriff Aura: ON" end
+end)
+
+makeButton("MM2", "Role ESP: OFF", function(btn)
+	if roleESPActive then stopRoleESP() btn.Text = "Role ESP: OFF" else startRoleESP() btn.Text = "Role ESP: ON" end
+end)
+
+------------------------------------------------------------
+-- TP PANEL + FLING PANEL (paste at bottom of script)
+------------------------------------------------------------
+
+-- TP PANEL
 local tpPanel = Instance.new("Frame")
 tpPanel.Size = UDim2.new(0, 200, 0, 300)
 tpPanel.Position = UDim2.new(1, -210, 0.5, -150)
@@ -2142,9 +2321,7 @@ end
 Players.PlayerAdded:Connect(function() if tpPanel.Visible then refreshTPList() end end)
 Players.PlayerRemoving:Connect(function() if tpPanel.Visible then refreshTPList() end end)
 
-------------------------------------------------------------
 -- FLING PANEL
-------------------------------------------------------------
 local flingPanel = Instance.new("Frame")
 flingPanel.Size = UDim2.new(0, 200, 0, 300)
 flingPanel.Position = UDim2.new(1, -420, 0.5, -150)
@@ -2246,55 +2423,33 @@ end
 Players.PlayerAdded:Connect(function() if flingPanel.Visible then refreshFlingList() end end)
 Players.PlayerRemoving:Connect(function() if flingPanel.Visible then refreshFlingList() end end)
 
-------------------------------------------------------------
--- MAIN PAGE
-------------------------------------------------------------
-makeSlider("Main", "WalkSpeed", 15, 200, 16, function(v)
-	if humanoid and humanoid.Parent then humanoid.WalkSpeed = v end
-end)
-
-makeButton("Main", "Fly ON/OFF", function(btn)
-	if flying then stopFly() btn.Text = "Fly ON/OFF" else startFly() btn.Text = "Fly: ON" end
-end)
-
-makeButton("Main", "Noclip: OFF", function(btn)
-	if noclip then stopNoclip() btn.Text = "Noclip: OFF" else startNoclip() btn.Text = "Noclip: ON" end
-end)
-
-makeButton("Main", "Inf Jump: OFF", function(btn)
-	if infJump then stopInfJump() btn.Text = "Inf Jump: OFF" else startInfJump() btn.Text = "Inf Jump: ON" end
-end)
-
-makeButton("Main", "God Mode: OFF", function(btn)
-	if godModeActive then stopGodMode() btn.Text = "God Mode: OFF" else startGodMode() btn.Text = "God Mode: ON" end
-end)
-
-makeButton("Main", "Anti-Fling: OFF", function(btn)
-	if antiFlingActive then stopAntiFling() btn.Text = "Anti-Fling: OFF" else startAntiFling() btn.Text = "Anti-Fling: ON" end
-end)
-
-------------------------------------------------------------
--- TP PAGE
-------------------------------------------------------------
+-- PAGE BUTTONS
 makeButton("TP", "Open TP Menu", function()
 	tpPanel.Visible = not tpPanel.Visible
 	if tpPanel.Visible then refreshTPList() end
 end)
 
 makeButton("TP", "TP to Closest", function()
-	local closest = findClosestPlayer()
+	local closest, closestDist = nil, math.huge
+	if not rootPart then return end
+	for _, p in ipairs(Players:GetPlayers()) do
+		if p ~= player and p.Character then
+			local tRoot = p.Character:FindFirstChild("HumanoidRootPart")
+			if tRoot then
+				local d = (tRoot.Position - rootPart.Position).Magnitude
+				if d < closestDist then
+					closest = p
+					closestDist = d
+				end
+			end
+		end
+	end
 	if closest and closest.Character then
 		local tRoot = closest.Character:FindFirstChild("HumanoidRootPart")
-		if tRoot and rootPart then rootPart.CFrame = tRoot.CFrame * CFrame.new(0, 3, 0) end
+		if tRoot then
+			rootPart.CFrame = tRoot.CFrame * CFrame.new(0, 3, 0)
+		end
 	end
-end)
-
-------------------------------------------------------------
--- FLING PAGE
-------------------------------------------------------------
-makeButton("Fling", "Fling Closest", function()
-	local target = findClosestPlayer()
-	if target then flingPlayer(target) end
 end)
 
 makeButton("Fling", "Open Fling Menu", function()
@@ -2302,173 +2457,30 @@ makeButton("Fling", "Open Fling Menu", function()
 	if flingPanel.Visible then refreshFlingList() end
 end)
 
-makeButton("Fling", "Fling Aura: OFF", function(btn)
-	if flingAuraActive then stopFlingAura() btn.Text = "Fling Aura: OFF" else startFlingAura() btn.Text = "Fling Aura: ON" end
-end)
-
-------------------------------------------------------------
--- VISUAL PAGE
-------------------------------------------------------------
-makeButton("Visual", "ESP: OFF", function(btn)
-	if espActive then stopESP() btn.Text = "ESP: OFF" else startESP() btn.Text = "ESP: ON" end
-end)
-
-makeButton("Visual", "Ghost: OFF", function(btn)
-	if ghost then ghost = false removeGhost() btn.Text = "Ghost: OFF" else ghost = true applyGhost() btn.Text = "Ghost: ON" end
-end)
-
-makeButton("Visual", "Red Glow: OFF", function(btn)
-	if redGlowActive then stopRedGlow() btn.Text = "Red Glow: OFF" else startRedGlow() btn.Text = "Red Glow: ON" end
-end)
-
-------------------------------------------------------------
--- FUN PAGE
-------------------------------------------------------------
-makeButton("Fun", "Say JOIN TEAM c00lkid", function() sayMessage() end)
-
-makeButton("Fun", "Spam Chat: OFF", function(btn)
-	if chatSpamActive then stopChatSpam() btn.Text = "Spam Chat: OFF" else startChatSpam() btn.Text = "Spam Chat: ON" end
-end)
-
-------------------------------------------------------------
--- C00LKIDD PAGE
-------------------------------------------------------------
-makeButton("c00lkidd", "Super Ring: OFF", function(btn)
-	if superRingActive then stopSuperRing() btn.Text = "Super Ring: OFF" else startSuperRing() btn.Text = "Super Ring: ON" end
-end)
-
-makeButton("c00lkidd", "Tornado: OFF", function(btn)
-	if tornadoActive then stopTornado() btn.Text = "Tornado: OFF" else startTornado() btn.Text = "Tornado: ON" end
-end)
-
-makeButton("c00lkidd", "Red Pad: OFF", function(btn)
-	if redPadActive then stopRedPad() btn.Text = "Red Pad: OFF" else startRedPad() btn.Text = "Red Pad: ON" end
-end)
-
-makeButton("c00lkidd", "Red Sky: OFF", function(btn)
-	if redSkyActive then stopRedSky() btn.Text = "Red Sky: OFF" else startRedSky() btn.Text = "Red Sky: ON" end
-end)
-
-makeButton("c00lkidd", "Cage: OFF", function(btn)
-	if cageActive then stopCage() btn.Text = "Cage: OFF" else startCage() btn.Text = "Cage: ON" end
-end)
-
-makeButton("c00lkidd", "Block Storm: OFF", function(btn)
-	if stormActive then stopStorm() btn.Text = "Block Storm: OFF" else startStorm() btn.Text = "Block Storm: ON" end
-end)
-
-makeButton("c00lkidd", "Black Hole: OFF", function(btn)
-	if holeActive then stopBlackHole() btn.Text = "Black Hole: OFF" else startBlackHole() btn.Text = "Black Hole: ON" end
-end)
-
-makeSlider("c00lkidd", "Black Hole Range", 5, 50, 15, function(v)
-	BLACK_HOLE_RANGE = v
-end)
-
-makeSlider("c00lkidd", "Black Hole Force", 20, 300, 100, function(v)
-	BLACK_HOLE_FORCE = v
-end)
-
-makeButton("c00lkidd", "Gun Hand: OFF", function(btn)
-	if gunHandActive then stopGunHand() btn.Text = "Gun Hand: OFF" else startGunHand() btn.Text = "Gun Hand: ON" end
-end)
-
-makeButton("c00lkidd", "Squish Hand: OFF", function(btn)
-	if squishHandActive then stopSquishHand() btn.Text = "Squish Hand: OFF" else startSquishHand() btn.Text = "Squish Hand: ON" end
-end)
-
-makeButton("c00lkidd", "Clap Hand: OFF", function(btn)
-	if clapHandActive then stopClapHand() btn.Text = "Clap Hand: OFF" else startClapHand() btn.Text = "Clap Hand: ON" end
-end)
-
-------------------------------------------------------------
--- NAT PAGE
-------------------------------------------------------------
-makeButton("Nat", "Disaster Predictor: OFF", function(btn)
-	if predictorActive then stopPredictor() btn.Text = "Disaster Predictor: OFF" else startPredictor() btn.Text = "Disaster Predictor: ON" end
-end)
-
-makeButton("Nat", "Safe Spot ESP: OFF", function(btn)
-	if safeSpotActive then stopSafeSpot() btn.Text = "Safe Spot ESP: OFF" else startSafeSpot() btn.Text = "Safe Spot ESP: ON" end
-end)
-
-makeButton("Nat", "Structure ESP: OFF", function(btn)
-	if structActive then stopStruct() btn.Text = "Structure ESP: OFF" else startStruct() btn.Text = "Structure ESP: ON" end
-end)
-
-------------------------------------------------------------
--- MM2 PAGE
-------------------------------------------------------------
-makeButton("MM2", "Kill Closest", function() killClosest() end)
-
-makeSlider("MM2", "Kill Aura Range", 0, 50, 7, function(v)
-	KILL_AURA_RANGE = v
-end)
-
-makeButton("MM2", "Kill Aura: OFF", function(btn)
-	if killAuraActive then stopKillAura() btn.Text = "Kill Aura: OFF" else startKillAura() btn.Text = "Kill Aura: ON" end
-end)
-
-makeButton("MM2", "Sheriff Aura: OFF", function(btn)
-	if sheriffAuraActive then stopSheriffAura() btn.Text = "Sheriff Aura: OFF" else startSheriffAura() btn.Text = "Sheriff Aura: ON" end
-end)
-
-makeButton("MM2", "Role ESP: OFF", function(btn)
-	if roleESPActive then stopRoleESP() btn.Text = "Role ESP: OFF" else startRoleESP() btn.Text = "Role ESP: ON" end
-end)
-
-------------------------------------------------------------
--- MUSIC PAGE
-------------------------------------------------------------
-local currentMusic = nil
-
-local function playTrack(soundId, volume)
-	if currentMusic then
-		pcall(function()
-			currentMusic:Stop()
-			currentMusic:Destroy()
-		end)
-		currentMusic = nil
-	end
-
-	local sound = Instance.new("Sound")
-	sound.SoundId = soundId
-	sound.Volume = volume or 3
-	sound.Looped = true
-	sound.Parent = SoundService
-	sound:Play()
-	currentMusic = sound
-end
-
-local function stopAllMusic()
-	if currentMusic then
-		pcall(function()
-			currentMusic:Stop()
-			currentMusic:Destroy()
-		end)
-		currentMusic = nil
-	end
-	for _, s in ipairs(SoundService:GetChildren()) do
-		if s:IsA("Sound") then
-			pcall(function() s:Stop() end)
+makeButton("Fling", "Fling Closest", function()
+	local closest, closestDist = nil, math.huge
+	if not rootPart then return end
+	for _, p in ipairs(Players:GetPlayers()) do
+		if p ~= player and p.Character then
+			local tRoot = p.Character:FindFirstChild("HumanoidRootPart")
+			if tRoot then
+				local d = (tRoot.Position - rootPart.Position).Magnitude
+				if d < closestDist then
+					closest = p
+					closestDist = d
+				end
+			end
 		end
 	end
-end
-
-makeButton("Music", "Playful Master", function()
-	playTrack("rbxassetid://115520764429413", 3)
+	if closest then flingPlayer(closest) end
 end)
 
-makeButton("Music", "c00lkidd Sound 1", function()
-	playTrack("rbxassetid://72404297743317", 3)
+makeButton("Fling", "Fling Aura: OFF", function(btn)
+	if flingAuraActive then
+		stopFlingAura()
+		btn.Text = "Fling Aura: OFF"
+	else
+		startFlingAura()
+		btn.Text = "Fling Aura: ON"
+	end
 end)
-
-makeButton("Music", "c00lkidd Sound 2", function()
-	playTrack("rbxassetid://99761211238896", 3)
-end)
-
-makeButton("Music", "Stop Music", function()
-	stopAllMusic()
-end)
-
-print("c00lgui Reborn loaded — all features ready")
