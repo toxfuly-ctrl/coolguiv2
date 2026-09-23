@@ -324,6 +324,7 @@ createPage("Fun")
 createPage("c00lkidd")
 createPage("Nat")
 createPage("MM2")
+createPage("Music")
 
 pages["Main"].frame.Visible = true
 pages["Main"].navBtn.BackgroundColor3 = RED_BRIGHT
@@ -688,63 +689,6 @@ local function stopChatSpam()
 end
 
 ------------------------------------------------------------
--- TORNADO
-------------------------------------------------------------
-local tornadoActive = false
-local tornadoParts = {}
-local tornadoConnection
-
-local function startTornado()
-	if tornadoActive then return end
-	tornadoActive = true
-	tornadoParts = {}
-
-	for i = 1, 30 do
-		local part = Instance.new("Part")
-		part.Size = Vector3.new(1.5, 1.5, 1.5)
-		part.Color = Color3.fromRGB(200, 200, 200)
-		part.Anchored = false
-		part.CanCollide = false
-		part.Parent = workspace
-		table.insert(tornadoParts, part)
-	end
-
-	local angle = 0
-	tornadoConnection = RunService.Heartbeat:Connect(function(dt)
-		if not tornadoActive or not rootPart or not rootPart.Parent then return end
-		angle = angle + dt * 6
-		local center = rootPart.Position
-
-		for i, part in ipairs(tornadoParts) do
-			if part and part.Parent then
-				local height = i * 0.8
-				local radius = 2 + math.sin(i / 5) * 2
-				local partAngle = angle + (i * 0.3)
-				local offset = Vector3.new(
-					math.cos(partAngle) * radius,
-					height,
-					math.sin(partAngle) * radius
-				)
-				local targetPos = center + offset
-				part.CFrame = CFrame.new(targetPos) * CFrame.Angles(angle, angle, 0)
-				part.AssemblyLinearVelocity = (targetPos - part.Position) / dt
-			end
-		end
-	end)
-end
-
-local function stopTornado()
-	tornadoActive = false
-	if tornadoConnection then tornadoConnection:Disconnect() tornadoConnection = nil end
-	for _, part in ipairs(tornadoParts) do
-		if part and part.Parent then part:Destroy() end
-	end
-	tornadoParts = {}
-end
-
-player.CharacterAdded:Connect(function() if tornadoActive then stopTornado() end end)
-
-------------------------------------------------------------
 -- FLING
 ------------------------------------------------------------
 local flinging = false
@@ -960,146 +904,230 @@ player.CharacterAdded:Connect(function() if flingAuraActive then stopFlingAura()
 -- C00LKIDD PAGE FEATURES
 ------------------------------------------------------------
 
-------------------------------------------------------------
--- HAMMER (add to main GUI)
-------------------------------------------------------------
-local hammerActive = false
-local hammerParts = {}
-local hammerFolder = nil
-local hammerConnection = nil
-local hammerClickConn = nil
-local hammerSlam = false
-local hammerSlamOffset = 0
+-- CLICK EXPLODE (final version)
 
-local function buildHammer()
-	if hammerFolder then hammerFolder:Destroy() end
-	hammerFolder = Instance.new("Folder")
-	hammerFolder.Name = "CoolKidHammer"
-	hammerFolder.Parent = workspace
+local explodeActive = false
+local explodeConn = nil
 
-	hammerParts = {}
+local function explodeTarget(targetPlayer)
+	if not targetPlayer or targetPlayer == player then return end
+	if _G.coolkid_flinging then return end
 
-	local handle = Instance.new("Part")
-	handle.Size = Vector3.new(1, 5, 1)
-	handle.Color = Color3.fromRGB(120, 80, 40)
-	handle.Material = Enum.Material.Wood
-	handle.Anchored = false
-	handle.CanCollide = false
-	handle.CanQuery = false
-	handle.CanTouch = false
-	handle.Parent = hammerFolder
-	table.insert(hammerParts, handle)
+	local myChar = player.Character
+	local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
+	local myRoot = myHum and myHum.RootPart
 
-	local head = Instance.new("Part")
-	head.Size = Vector3.new(5, 1.5, 1.5)
-	head.Color = Color3.fromRGB(200, 0, 0)
-	head.Material = Enum.Material.Neon
-	head.Anchored = false
-	head.CanCollide = false
-	head.CanQuery = false
-	head.CanTouch = false
-	head.Parent = hammerFolder
-	table.insert(hammerParts, head)
+	local tChar = targetPlayer.Character
+	if not tChar then return end
+	local tHum = tChar:FindFirstChildOfClass("Humanoid")
+	local tRoot = tHum and tHum.RootPart
+	local tHead = tChar:FindFirstChild("Head")
 
-	local light = Instance.new("PointLight")
-	light.Color = Color3.fromRGB(255, 0, 0)
-	light.Brightness = 5
-	light.Range = 12
-	light.Parent = head
-end
+	if not (myChar and myHum and myRoot) then return end
+	if not (tHum and tRoot) then return end
 
-local function startHammer()
-	if hammerActive then return end
-	hammerActive = true
-	buildHammer()
+	_G.coolkid_flinging = true
 
-	hammerConnection = RunService.RenderStepped:Connect(function(dt)
-		if not hammerActive or not rootPart or not hammerParts[1] then return end
-		local cam = workspace.CurrentCamera
+	local savedCFrame = myRoot.CFrame
+	local savedHealth = myHum.Health
+	local savedFPDH = workspace.FallenPartsDestroyHeight
 
-		if hammerSlam then
-			hammerSlamOffset = math.min(8, hammerSlamOffset + dt * 50)
-		else
-			hammerSlamOffset = math.max(0, hammerSlamOffset - dt * 30)
+	local savedCollide = {}
+	for _, p in ipairs(myChar:GetDescendants()) do
+		if p:IsA("BasePart") then
+			savedCollide[p] = p.CanCollide
+			p.CanCollide = false
 		end
+	end
 
-		local basePos = rootPart.Position + cam.CFrame.LookVector * 5 + cam.CFrame.UpVector * (5 - hammerSlamOffset)
-		local baseCF = CFrame.new(basePos, basePos + cam.CFrame.LookVector)
+	if tHead then
+		workspace.CurrentCamera.CameraSubject = tHead
+	else
+		workspace.CurrentCamera.CameraSubject = tHum
+	end
 
-		hammerParts[1].CFrame = baseCF
-		hammerParts[1].AssemblyLinearVelocity = Vector3.zero
-		hammerParts[1].AssemblyAngularVelocity = Vector3.zero
+	workspace.FallenPartsDestroyHeight = 0 / 0
+	myHum.PlatformStand = true
 
-		hammerParts[2].CFrame = baseCF * CFrame.new(0, 3, 0) * CFrame.Angles(0, 0, math.rad(90))
-		hammerParts[2].AssemblyLinearVelocity = Vector3.zero
-		hammerParts[2].AssemblyAngularVelocity = Vector3.zero
+	-- Red explosion at their position
+	for i = 1, 20 do
+		local chunk = Instance.new("Part")
+		chunk.Size = Vector3.new(1.5, 1.5, 1.5)
+		chunk.Color = Color3.fromRGB(255, math.random(0, 80), 0)
+		chunk.Material = Enum.Material.Neon
+		chunk.Anchored = false
+		chunk.CanCollide = false
+		chunk.Position = tRoot.Position + Vector3.new(math.random(-2,2), math.random(0,4), math.random(-2,2))
+		chunk.Parent = workspace
 
-		if hammerSlam and hammerSlamOffset >= 7 then
-			hammerSlam = false
-			local target = player:GetMouse().Target
-			if target then
-				local model = target:FindFirstAncestorOfClass("Model")
-				if model then
-					local tp = Players:GetPlayerFromCharacter(model)
-					if tp and tp ~= player then
-						local tr = model:FindFirstChild("HumanoidRootPart")
-						if tr then
-							for i = 1, 12 do
-								local block = Instance.new("Part")
-								block.Size = Vector3.new(1.5, 1.5, 1.5)
-								block.Color = Color3.fromRGB(255, math.random(0, 80), 0)
-								block.Material = Enum.Material.Neon
-								block.Anchored = false
-								block.CanCollide = false
-								block.Position = tr.Position
-								block.Parent = workspace
+		local cbv = Instance.new("BodyVelocity")
+		cbv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+		cbv.Velocity = Vector3.new(math.random(-150,150), math.random(100,250), math.random(-150,150))
+		cbv.Parent = chunk
+		Debris:AddItem(cbv, 0.5)
+		Debris:AddItem(chunk, 3)
+	end
 
-								local bv = Instance.new("BodyVelocity")
-								bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-								bv.Velocity = Vector3.new(math.random(-150,150), math.random(100,250), math.random(-150,150))
-								bv.Parent = block
-								Debris:AddItem(bv, 0.5)
-								Debris:AddItem(block, 3)
-							end
+	local flash = Instance.new("Part")
+	flash.Shape = Enum.PartType.Ball
+	flash.Size = Vector3.new(6, 6, 6)
+	flash.Color = Color3.fromRGB(255, 0, 0)
+	flash.Material = Enum.Material.Neon
+	flash.Anchored = false
+	flash.CanCollide = false
+	flash.Transparency = 0.3
+	flash.Position = tRoot.Position
+	flash.Parent = workspace
 
-							local fv = Instance.new("BodyVelocity")
-							fv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-							fv.Velocity = Vector3.new(math.random(-100,100), 250, math.random(-100,100))
-							fv.Parent = tr
-							Debris:AddItem(fv, 0.5)
+	local fl = Instance.new("PointLight")
+	fl.Color = Color3.fromRGB(255, 0, 0)
+	fl.Brightness = 10
+	fl.Range = 30
+	fl.Parent = flash
+	Debris:AddItem(flash, 0.5)
 
-							local sp = Instance.new("BodyAngularVelocity")
-							sp.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
-							sp.AngularVelocity = Vector3.new(200, 200, 200)
-							sp.Parent = tr
-							Debris:AddItem(sp, 1)
-						end
-					end
+	-- Spin fling (YARHM method)
+	local function FPos(BasePart, Pos, Ang)
+		myRoot.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
+		myChar:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
+		myRoot.Velocity = Vector3.new(9e7, 9e7 * 10, 9e7)
+		myRoot.RotVelocity = Vector3.new(9e8, 9e8, 9e8)
+	end
+
+	local function spinLoop(BasePart)
+		local TimeToWait = 0.4
+		local Time = tick()
+		local Angle = 0
+		repeat
+			if myRoot and tHum then
+				if BasePart.Velocity.Magnitude < 50 then
+					Angle = Angle + 100
+					FPos(BasePart, CFrame.new(0, 1.5, 0) + tHum.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(0, -1.5, 0) + tHum.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(2.25, 1.5, -2.25) + tHum.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(-2.25, -1.5, 2.25) + tHum.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+					task.wait()
+				else
+					FPos(BasePart, CFrame.new(0, 1.5, tHum.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(0, -1.5, -tHum.WalkSpeed), CFrame.Angles(0, 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(0, 1.5, tHum.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(0, 1.5, tRoot.Velocity.Magnitude / 1.25), CFrame.Angles(math.rad(90), 0, 0))
+					task.wait()
+					FPos(BasePart, CFrame.new(0, -1.5, -tRoot.Velocity.Magnitude / 1.25), CFrame.Angles(0, 0, 0))
+					task.wait()
 				end
+			else
+				break
+			end
+		until BasePart.Velocity.Magnitude > 500 
+			or BasePart.Parent ~= tChar 
+			or targetPlayer.Parent ~= Players 
+			or targetPlayer.Character ~= tChar 
+			or tHum.Sit 
+			or myHum.Health <= 0 
+			or tick() > Time + TimeToWait
+	end
+
+	local BV = Instance.new("BodyVelocity")
+	BV.Parent = myRoot
+	BV.Velocity = Vector3.new(9e8, 9e8, 9e8)
+	BV.MaxForce = Vector3.new(1/0, 1/0, 1/0)
+
+	myHum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+
+	if tRoot and tHead then
+		if (tRoot.CFrame.p - tHead.CFrame.p).Magnitude > 5 then
+			spinLoop(tHead)
+		else
+			spinLoop(tRoot)
+		end
+	elseif tRoot and not tHead then
+		spinLoop(tRoot)
+	elseif not tRoot and tHead then
+		spinLoop(tHead)
+	end
+
+	task.wait(0.15)
+
+	if BV then BV:Destroy() end
+	pcall(function() myHum:SetStateEnabled(Enum.HumanoidStateType.Seated, true) end)
+
+	if myChar then
+		for _, part in ipairs(myChar:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.Velocity = Vector3.zero
+				part.RotVelocity = Vector3.zero
 			end
 		end
-	end)
+	end
 
-	hammerClickConn = UserInputService.InputBegan:Connect(function(input, processed)
+	if myRoot then myRoot.CFrame = savedCFrame end
+
+	for p, state in pairs(savedCollide) do
+		if p and p.Parent then p.CanCollide = state end
+	end
+
+	workspace.CurrentCamera.CameraSubject = myHum
+	workspace.FallenPartsDestroyHeight = savedFPDH
+
+	task.wait(0.05)
+
+	if myChar then
+		for _, part in ipairs(myChar:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.Velocity = Vector3.zero
+				part.RotVelocity = Vector3.zero
+			end
+		end
+	end
+
+	if myHum and myHum.Parent then
+		pcall(function()
+			myHum.Health = math.max(myHum.Health, savedHealth, myHum.MaxHealth)
+		end)
+	end
+
+	myHum.PlatformStand = false
+	_G.coolkid_flinging = false
+end
+
+local function enableExplode()
+	if explodeActive then return end
+	explodeActive = true
+
+	explodeConn = UserInputService.InputBegan:Connect(function(input, processed)
 		if processed then return end
-		if input.UserInputType == Enum.UserInputType.MouseButton1 and hammerActive then
-			hammerSlam = true
-			hammerSlamOffset = 0
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 
+		and input.UserInputType ~= Enum.UserInputType.Touch then return end
+		if not explodeActive then return end
+
+		local mouse = player:GetMouse()
+		local target = mouse.Target
+		if not target then return end
+
+		local model = target:FindFirstAncestorOfClass("Model")
+		if not model then return end
+
+		local targetPlayer = Players:GetPlayerFromCharacter(model)
+		if targetPlayer and targetPlayer ~= player then
+			explodeTarget(targetPlayer)
 		end
 	end)
 end
 
-local function stopHammer()
-	hammerActive = false
-	if hammerConnection then hammerConnection:Disconnect() hammerConnection = nil end
-	if hammerClickConn then hammerClickConn:Disconnect() hammerClickConn = nil end
-	if hammerFolder then hammerFolder:Destroy() hammerFolder = nil end
-	hammerParts = {}
+local function disableExplode()
+	explodeActive = false
+	if explodeConn then
+		explodeConn:Disconnect()
+		explodeConn = nil
+	end
 end
-
-player.CharacterAdded:Connect(function()
-	if hammerActive then stopHammer() end
-end)
 
 -- SUPER RING
 local SUPER_RING_RADIUS = 12
@@ -1249,90 +1277,6 @@ local function stopRedSky()
 	redSkyActive = false
 	if redSky then redSky:Destroy() redSky = nil end
 	if originalSky then originalSky.Parent = Lighting end
-end
-
--- BLOCK SHOOTER + RAPID FIRE
-local rapidFireActive = false
-local rapidFireConnection = nil
-local blocks = {}
-
-local function fireBlock()
-	if not rootPart then return end
-	if #blocks > 30 then return end
-
-	local startPos
-	local dir
-
-	if lockedTarget and lockedTarget.Character then
-		local tRoot = lockedTarget.Character:FindFirstChild("HumanoidRootPart")
-		if tRoot then
-			startPos = rootPart.Position + (rootPart.CFrame.LookVector * 3)
-			dir = (tRoot.Position - startPos).Unit
-		end
-	end
-	if not startPos then
-		startPos = rootPart.Position + (rootPart.CFrame.LookVector * 3)
-		local mouse = player:GetMouse()
-		if mouse and mouse.Hit then
-			dir = (mouse.Hit.Position - startPos).Unit
-		else
-			dir = rootPart.CFrame.LookVector
-		end
-	end
-
-	local block = Instance.new("Part")
-	block.Size = Vector3.new(2, 2, 2)
-	block.Color = Color3.fromRGB(255, 0, 0)
-	block.Material = Enum.Material.Neon
-	block.Anchored = false
-	block.CanCollide = false
-	block.CanQuery = false
-	block.CanTouch = false
-	block.CFrame = CFrame.new(startPos)
-	block.Parent = workspace
-
-	local bv = Instance.new("BodyVelocity")
-	bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-	bv.Velocity = dir * 200
-	bv.Parent = block
-
-	table.insert(blocks, block)
-	Debris:AddItem(block, 3)
-
-	-- Fling anyone it touches
-	block.Touched:Connect(function(hit)
-		local model = hit:FindFirstAncestorOfClass("Model")
-		if model then
-			local hitPlayer = Players:GetPlayerFromCharacter(model)
-			if hitPlayer and hitPlayer ~= player then
-				local hRoot = model:FindFirstChild("HumanoidRootPart")
-				if hRoot then
-					local fling = Instance.new("BodyVelocity")
-					fling.MaxForce = Vector3.new(1e6, 1e6, 1e6)
-					fling.Velocity = dir * 300 + Vector3.new(0, 200, 0)
-					fling.Parent = hRoot
-					Debris:AddItem(fling, 0.5)
-				end
-			end
-		end
-	end)
-end
-
-local function startRapidFire()
-	if rapidFireActive then return end
-	rapidFireActive = true
-	rapidFireConnection = UserInputService.InputBegan:Connect(function(input, processed)
-		if processed then return end
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			-- Fire continuously while held
-			task.spawn(function()
-				while rapidFireActive and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-					fireBlock()
-					task.wait(0.1)
-				end
-			end)
-		end
-	end)
 end
 
 -- CAGE
@@ -1621,7 +1565,7 @@ local function buildShooterBlocks()
 	end
 	shooterBlocks = {}
 
-	for i = 1, 5 do
+	for i = 0, 5 do
 		local block = Instance.new("Part")
 		block.Size = Vector3.new(3, 3, 3)
 		block.Color = Color3.fromRGB(255, 0, 0)
@@ -1649,7 +1593,7 @@ local function fireOneBlock()
 	block:SetAttribute("fired", true)
 
 	-- Aim at mouse
-    local mouse = player:GetMouse()
+	local mouse = player:GetMouse()
 	local target = mouse.Hit.Position
 	local startPos = block.Position
 	local dir = (target - startPos).Unit
@@ -1693,12 +1637,12 @@ local function fireAllBlocks()
 			local fired = fireOneBlock()
 			if not fired then break end
 			if i < 5 then
-				task.wait(0.7)
+				task.wait(0.1)
 			end
 		end
 
 		-- Cooldown then respawn
-		task.wait(3)
+		task.wait(0)
 		buildShooterBlocks()
 		shooterCanFire = true
 	end)
@@ -1722,7 +1666,7 @@ local function startShooter()
 				local angle = (count - 1) * (math.pi * 2 / 5)
 				local offset = Vector3.new(
 					math.cos(angle) * 3,
-					math.sin(shooterBobbing + count) * 0.5,
+					math.sin(shooterBobbing + count) * 0,
 					math.sin(angle) * 3
 				)
 				local targetPos = basePos + offset
@@ -2089,6 +2033,55 @@ local function stopStruct()
 end
 
 ------------------------------------------------------------
+-- MUSIC PAGE
+------------------------------------------------------------
+local currentMusic = nil
+
+local function playMusic(soundId, name)
+	if currentMusic then
+		currentMusic:Stop()
+		currentMusic:Destroy()
+		currentMusic = nil
+	end
+
+	local sound = Instance.new("Sound")
+	sound.Name = "CoolKidMusic"
+	sound.SoundId = "rbxassetid://" .. soundId
+	sound.Volume = 2
+	sound.Looped = true
+	sound.Parent = SoundService
+	sound:Play()
+	currentMusic = sound
+end
+
+local function stopMusic()
+	if currentMusic then
+		currentMusic:Stop()
+		currentMusic:Destroy()
+		currentMusic = nil
+	end
+end
+
+makeButton("Music", "c00lkidd Ashes", function()
+	playMusic("72404297743317", "c00lkidd Ashes")
+end)
+
+makeButton("Music", "Come Out c00lkidd", function()
+	playMusic("132020810128779", "Come Out c00lkidd")
+end)
+
+makeButton("Music", "c00lkidd Out", function()
+	playMusic("111524327688347", "c00lkidd Out")
+end)
+
+makeButton("Music", "c00lkidd Song", function()
+	playMusic("115520764429413", "c00lkidd Song")
+end)
+
+makeButton("Music", "Stop All Sounds", function()
+	stopMusic()
+end)
+-----------------------------------------------------------
 -- BUTTONS
 ------------------------------------------------------------
 makeSlider("Main", "WalkSpeed", 15, 200, 16, function(v)
@@ -2147,6 +2140,16 @@ makeButton("c00lkidd", "Super Ring: OFF", function(btn)
 	if superRingActive then stopSuperRing() btn.Text = "Super Ring: OFF" else startSuperRing() btn.Text = "Super Ring: ON" end
 end)
 
+makeButton("c00lkidd", "Click Explode: OFF", function(btn)
+	if explodeActive then
+		disableExplode()
+		btn.Text = "Click Explode: OFF"
+	else
+		enableExplode()
+		btn.Text = "Click Explode: ON"
+	end
+end)
+
 makeButton("c00lkidd", "Tornado: OFF", function(btn)
 	if tornadoActive then stopTornado() btn.Text = "Tornado: OFF" else startTornado() btn.Text = "Tornado: ON" end
 end)
@@ -2177,10 +2180,6 @@ end)
 
 makeButton("c00lkidd", "Block Shooter: OFF", function(btn)
 	if shooterActive then stopShooter() btn.Text = "Block Shooter: OFF" else startShooter() btn.Text = "Block Shooter: ON" end
-end)
-
-akeButton("c00lkidd", "Rapid Fire: OFF", function(btn)
-	if rapidFireActive then stopRapidFire() btn.Text = "Rapid Fire: OFF" else startRapidFire() btn.Text = "Rapid Fire: ON" end
 end)
 
 makeButton("Nat", "Disaster Predictor: OFF", function(btn)
@@ -2485,4 +2484,3 @@ makeButton("Fling", "Fling Aura: OFF", function(btn)
 		btn.Text = "Fling Aura: ON"
 	end
 end)
-	
