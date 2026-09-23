@@ -1497,6 +1497,16 @@ local function stopStorm()
 	if stormConnection then stormConnection:Disconnect() stormConnection = nil end
 end
 
+makeButton("c00lkidd", "Hammer: OFF", function(btn)
+	if hammerActive then
+		stopHammer()
+		btn.Text = "Hammer: OFF"
+	else
+		startHammer()
+		btn.Text = "Hammer: ON"
+	end
+end)
+
 -- BLACK HOLE
 local BLACK_HOLE_RANGE = 15
 local BLACK_HOLE_FORCE = 100
