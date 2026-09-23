@@ -1269,7 +1269,6 @@ end
 player.CharacterAdded:Connect(function()
 	if hammerActive then stopHammer() end
 end)
-
 -- SUPER RING
 local SUPER_RING_RADIUS = 12
 local SUPER_RING_ORBIT = 8
